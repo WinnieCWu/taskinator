@@ -6,6 +6,9 @@ var pageContentEl = document.querySelector("#page-content");
 var tasksInProgressEl = document.querySelector("#tasks-in-progress");
 var tasksCompletedEl = document.querySelector("#tasks-completed");
 
+//create empty task array to hold tasks objects to send to localStorage
+var tasks = [];
+
 var taskFormHandler = function (event) {
   event.preventDefault();
   var taskNameInput = document.querySelector("input[name='task-name']").value;
@@ -34,7 +37,8 @@ var taskFormHandler = function (event) {
       //package up data as an obj
   var taskDataObj = {
     name: taskNameInput,
-    type: taskTypeInput
+    type: taskTypeInput,
+    status: "to do" //since tasks just created can't be 'in progress' or 'complete' yet
   };
 
   //send it as an arg to createTaskEl
@@ -58,10 +62,18 @@ var createTaskEl = function(taskDataObj) {
 
   var taskActionsEl = createTaskActions(taskIdCounter);
   listItemEl.appendChild(taskActionsEl);
+
+  //add value of task object's id as property to the taskDataObj argument variable and to the tasks array
+  taskDataObj.id = taskIdCounter;
+  tasks.push(taskDataObj);
   // add entire list item to list
   tasksToDoEl.appendChild(listItemEl);
   //increase task counter for next unique id
   taskIdCounter++;
+
+  //to test if new property gets the fxn via taskDataObj parameter
+  console.log(taskDataObj);
+  console.log(taskDataObj.status);
   };
 
 var createTaskActions =  function(taskId){
@@ -108,6 +120,16 @@ var completeEditTask = function(taskName, taskType, taskId){
   taskSelected.querySelector("span.task-type").textContent = taskType;
 
   alert("TaskUpdated!");
+  // loop through tasks array and task object with new content
+  //checking to see if indiv' task's id property matches the taskId argument passed in var
+  for (var i = 0; i < tasks.length; i++) {
+    //parseInt to convert string to a #, to complete # to #
+    if (tasks[i].id === parseInt(taskId)) {
+      tasks[i].name = taskName;
+      tasks[i].type = taskType;
+    }
+  };
+
   //ensure users can create new tasks again by removing data-task-id
   formEl.removeAttribute("data-task-id");
   document.querySelector("#save-task").textContent = "Add Task";
@@ -146,6 +168,14 @@ var taskStatusChangeHandler = function(event){
   } else if (statusValue === "completed") {
     tasksCompletedEl.appendChild(taskSelected);
   }
+
+  //update tasks in tasks array
+  for (var i =0; i < tasks.length; i++){
+    if (task[i].id === parseInt(taskId)){
+      task[id].status = statusValue;
+      console.log(tasks);
+      }
+    }
 };
 
 var editTask = function(taskId) {
@@ -176,6 +206,19 @@ var deleteTask = function(taskId){
   taskSelected.remove(); 
   //rather than using event.target.matches(".delete-button"..
   //otherwise, would be an endless loop
+
+  //create new empty array variable
+  var updatedTaskArr = [];
+  //loop through current tasks to see if current task (ie tasks[i]in the loop does not have same id value as the task we want to delete
+  for (var i = 0; i < tasks.length; i++) {
+    //if tasks[i].id doesn't match the value of taskId, let's keep that task and push it into the new array
+    if (tasks[i].id !== parseInt(taskId)){
+      //if it's not the same task, keep it by adding it to the array
+      updatedTaskArr.push(task[i]);
+    }
+  }
+  //reassign tasks array (w/o the removed task) to be the same as updatedTaskArr
+  tasks = updatedTaskArr;
 };
 
 // Create a new task
